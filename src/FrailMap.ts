@@ -39,7 +39,7 @@ export class FrailMap<K, V> extends Map<K, V> {
    * element is associated with the specified key or the value has been garbage
    * collected, undefined is returned.
    */
-  get(key: K) {
+  get(key: K): V | undefined {
     const ref = super.get(key) as FrailContainer<V> | undefined;
     const val = ref?.deref();
     if (val === undefined) {
@@ -54,7 +54,7 @@ export class FrailMap<K, V> extends Map<K, V> {
    * @returns boolean indicating whether an element with the specified key
    * exists or not, updates size if value has been garbage collected.
    */
-  has(key: K) {
+  has(key: K): boolean {
     return super.has(key) && this.get(key) !== undefined;
   }
 
@@ -65,7 +65,7 @@ export class FrailMap<K, V> extends Map<K, V> {
    * A `strong` option can be provided to use a strong reference to act like a
    * normal map.
    */
-  set(key: K, value: V, options?: SetOptions) {
+  set(key: K, value: V, options?: SetOptions): this {
     return super.set(
       key,
       (options?.strong || typeof WeakRef === "undefined"
@@ -81,7 +81,7 @@ export class FrailMap<K, V> extends Map<K, V> {
   forEach(
     callbackfn: (value: V, key: K, map: Map<K, V>) => void,
     thisArg?: this,
-  ) {
+  ): void {
     super.forEach((container, k) => {
       const ref = (container as FrailContainer<V>).deref();
       if (ref !== undefined) {
@@ -95,7 +95,7 @@ export class FrailMap<K, V> extends Map<K, V> {
   /**
    * Returns an iterable of key, value pairs for every entry in the map.
    */
-  entries() {
+  entries(): IterableIterator<[K, V]> {
     const map = new Map<K, V>();
     this.forEach((v, k) => {
       map.set(k, v);
@@ -106,7 +106,7 @@ export class FrailMap<K, V> extends Map<K, V> {
   /**
    * Returns an iterable of keys in the map
    */
-  keys() {
+  keys(): IterableIterator<K> {
     const keys = new Set<K>();
     this.forEach((_, k) => {
       keys.add(k);
@@ -117,7 +117,7 @@ export class FrailMap<K, V> extends Map<K, V> {
   /**
    * Returns an iterable of values in the map
    */
-  values() {
+  values(): IterableIterator<V> {
     const keys = new Set<V>();
     this.forEach((v) => {
       keys.add(v);
@@ -125,15 +125,15 @@ export class FrailMap<K, V> extends Map<K, V> {
     return keys.values();
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IterableIterator<[K, V]> {
     return this.entries();
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return "FrailMap";
   }
 
-  toJSON() {
+  toJSON(): Record<string, unknown> {
     const json: Record<string, unknown> = {};
     this.forEach((v, k) => {
       json[k as string] = v;
