@@ -1,0 +1,7 @@
+{
+  "name": "@vicary/frail-map",
+  "version": "1.0.8",
+  "exports": "./src/FrailMap.ts",
+  "lock": false,
+  "nodeModulesDir": false
+}
