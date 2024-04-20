@@ -1,8 +1,12 @@
 import type { FrailContainer } from "./FrailContainer.ts";
 import { StrongRef } from "./StrongRef.ts";
 
+/** Options for calling `.set()` on a FrailMap. */
 export type SetOptions = {
-  /** Use strong reference for this value. */
+  /**
+   * Use strong reference for this value, preventing it from being garbage
+   * collected.
+   */
   strong?: boolean;
 };
 
