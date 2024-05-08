@@ -1,7 +1,12 @@
 {
   "name": "@vicary/frail-map",
-  "version": "1.0.9",
-  "exports": "./src/FrailMap.ts",
+  "description": "FrailMap is an extension of WeakMap that supports primitive values using WeakRef.",
+  "version": "1.0.10",
+  "exports": "./mod.ts",
   "lock": false,
-  "nodeModulesDir": false
+  "nodeModulesDir": false,
+  "imports": {
+    "@deno/dnt": "jsr:@deno/dnt@^0.41.1",
+    "@std/assert": "jsr:@std/assert@^0.225.1"
+  }
 }

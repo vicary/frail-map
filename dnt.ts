@@ -1,22 +1,21 @@
-// Bundle src/FrailMap.ts into both ESM and CJS format.
-import { build, emptyDir } from "https://deno.land/x/dnt/mod.ts";
+// Bundle mod.ts into both ESM and CJS format.
+import { build, emptyDir } from "@deno/dnt";
 import pkg from "./deno.json" with { type: "json" };
 
 await emptyDir("./dnt");
 
 await build({
-  entryPoints: ["./src/FrailMap.ts"],
+  entryPoints: ["./mod.ts"],
   outDir: "./dnt",
   shims: {
-    // see JS docs for overview and more options
-    deno: true,
+    deno: "dev",
   },
+  importMap: "./deno.json",
   package: {
     // package.json properties
     name: "frail-map",
     version: pkg.version,
-    description:
-      "FrailMap is an extension of WeakMap that supports primitive values using WeakRef.",
+    description: pkg.description,
     license: "MIT",
     repository: {
       type: "git",
