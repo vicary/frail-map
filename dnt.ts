@@ -2,7 +2,7 @@
 import { build } from "@deno/dnt";
 import pkg from "./deno.json" with { type: "json" };
 
-await Deno.remove("./dnt", { recursive: true });
+await Deno.remove("./dnt", { recursive: true }).catch(() => {});
 
 await build({
   entryPoints: ["./mod.ts"],
