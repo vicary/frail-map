@@ -1,0 +1,59 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+
+      - name: Update dependencies
+        id: update
+        run: |
+          OUTPUT=$(deno outdated --update --latest)
+          echo "$OUTPUT"
+
+          # Create markdown table from the output
+          echo "| Package | Previous Version | New Version |" > dependency_updates.md
+          echo "|---------|------------------|-------------|" >> dependency_updates.md
+
+          # Parse the output for updated dependencies
+          echo "$OUTPUT" | grep -E '^\s*-\s' | sed -E 's/\s*-\s([^ ]+)\s([^ ]+)\s->\s([^ ]+)/| \1 | \2 | \3 |/' >> dependency_updates.md
+
+      - name: Check for changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore(deps): update dependencies"
+          git push
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): update dependencies"
+          title: "chore(deps): update dependencies"
+          body: |
+            This PR updates dependencies to their latest versions.
+
+            ## Updated Dependencies
+
+            $(cat dependency_updates.md)
+          branch: "update-dependencies"
