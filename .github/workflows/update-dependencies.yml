@@ -1,0 +1,54 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+
+      - name: Update dependencies
+        id: update
+        run: |
+          OUTPUT=$(deno outdated --update --latest)
+          echo "$OUTPUT"
+
+          if git diff --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          # Create markdown table from the output
+          echo "| Package | Previous Version | New Version |" > $GITHUB_OUTPUT
+          echo "|---------|------------------|-------------|" >> $GITHUB_OUTPUT
+
+          # Parse the output for updated dependencies
+          echo "$OUTPUT" | grep -E '^\s*-\s' | sed -E 's/\s*-\s([^ ]+)\s([^ ]+)\s->\s([^ ]+)/| \1 | \2 | \3 |/' >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        id: commit
+        run: |
+          echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): update dependencies"
+          title: "chore(deps): Update Dependencies"
+          body: |
+            This PR updates dependencies to their latest versions.
+
+            ## Updated Dependencies
+
+            ${{ steps.update.outputs.dependency_updates }}
+          branch: "chore(deps)/${{ steps.commit.outputs.commit_hash }}"
