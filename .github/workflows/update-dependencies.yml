@@ -17,10 +17,14 @@ jobs:
         uses: denoland/setup-deno@v2
 
       - name: Update dependencies
-        id: update
         run: |
           OUTPUT=$(deno outdated --update --latest)
           echo "$OUTPUT"
+
+          if git diff --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
 
           # Create markdown table from the output
           echo "| Package | Previous Version | New Version |" > dependency_updates.md
@@ -31,34 +35,29 @@ jobs:
 
       - name: Check for changes
         run: |
-          git diff --quiet
-
           if git diff --quiet; then
             echo "No changes detected."
             exit 0
-          else
-            echo "Changes detected."
           fi
 
-      - name: Commit and push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "chore(deps): update dependencies"
-          git push
-          echo b
+      # - name: Commit and push changes
+      #   id: commit
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git add .
+      #     git commit -m "chore(deps): update dependencies"
+      #     echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(deps): update dependencies"
-          title: "chore(deps): update dependencies"
+          title: "chore(deps): Update Dependencies"
           body: |
             This PR updates dependencies to their latest versions.
 
             ## Updated Dependencies
 
             $(cat dependency_updates.md)
-          branch: "update-dependencies"
